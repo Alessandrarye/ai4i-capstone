@@ -1,0 +1,12 @@
+pandas
+scikit-learn
+matplotlib
+joblib
+jupyter
+ipykernel
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+pydantic
+requests
