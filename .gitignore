@@ -8,3 +8,4 @@ logs/
 node_modules/
 dist/
 .venv/
+__pycache__/
