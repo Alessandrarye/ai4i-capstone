@@ -6,6 +6,11 @@ import {
   ResponsiveContainer,
   Legend,
   Tooltip,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
 } from "recharts";
 
 const API = "http://localhost:8000";
@@ -171,6 +176,12 @@ function App() {
     { name: "Fault", value: counts.red, color: STATUS_COLOR.red },
   ].filter((d) => d.value > 0);
 
+  // last 40 readings, oldest-to-newest, as risk %
+  const trendData = [...readings]
+    .slice(0, 40)
+    .reverse()
+    .map((r, i) => ({ i: i + 1, risk: +(r.score * 100).toFixed(1) }));
+
   return (
     <div>
       <header style={{ marginBottom: 24 }}>
@@ -235,6 +246,39 @@ function App() {
               />
               <Legend wrapperStyle={{ color: "#8ea0b8" }} />
             </PieChart>
+          </ResponsiveContainer>
+        </Panel>
+
+        <Panel title="Recent Risk Trend">
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart
+              data={trendData}
+              margin={{ top: 10, right: 16, bottom: 0, left: -10 }}
+            >
+              <CartesianGrid stroke="#243249" strokeDasharray="3 3" />
+              <XAxis dataKey="i" stroke="#8ea0b8" tick={{ fontSize: 11 }} />
+              <YAxis
+                stroke="#8ea0b8"
+                tick={{ fontSize: 11 }}
+                domain={[0, 100]}
+                unit="%"
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#131c2e",
+                  border: "1px solid #243249",
+                  borderRadius: 8,
+                  color: "#e7eef7",
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="risk"
+                stroke="#4da3ff"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </Panel>
       </div>
