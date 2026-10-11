@@ -106,10 +106,15 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/readings?limit=600`)
-      .then((r) => r.json())
-      .then(setReadings)
-      .catch((e) => setError(e.message));
+    const load = () => {
+      fetch(`${API}/readings?limit=600`)
+        .then((r) => r.json())
+        .then(setReadings)
+        .catch((e) => setError(e.message));
+    };
+    load(); // fetch immediately on load
+    const timer = setInterval(load, 3000); // then re-fetch every 3 seconds
+    return () => clearInterval(timer); // clean up when the page closes
   }, []);
 
   const counts = { green: 0, yellow: 0, red: 0 };
