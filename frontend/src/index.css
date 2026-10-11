@@ -1,0 +1,35 @@
+:root {
+  --bg: #0b1220;
+  --panel: #131c2e;
+  --panel-2: #1a2740;
+  --border: #243249;
+  --text: #e7eef7;
+  --muted: #8ea0b8;
+  --green: #2fb86b;
+  --amber: #f2b94b;
+  --red: #ef4b5b;
+  --accent: #4da3ff;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+#root {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
