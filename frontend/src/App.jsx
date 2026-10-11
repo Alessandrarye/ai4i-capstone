@@ -11,6 +11,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  BarChart,
+  Bar,
 } from "recharts";
 
 const API = "http://localhost:8000";
@@ -176,11 +178,24 @@ function App() {
     { name: "Fault", value: counts.red, color: STATUS_COLOR.red },
   ].filter((d) => d.value > 0);
 
-  // last 40 readings, oldest-to-newest, as risk %
   const trendData = [...readings]
     .slice(0, 40)
     .reverse()
     .map((r, i) => ({ i: i + 1, risk: +(r.score * 100).toFixed(1) }));
+
+  // readings per machine type, with fault counts
+  const byType = {};
+  readings.forEach((r) => {
+    if (!byType[r.machine_type])
+      byType[r.machine_type] = {
+        type: TYPE_NAME[r.machine_type] || r.machine_type,
+        total: 0,
+        faults: 0,
+      };
+    byType[r.machine_type].total += 1;
+    if (r.status === "red") byType[r.machine_type].faults += 1;
+  });
+  const barData = Object.values(byType);
 
   return (
     <div>
@@ -220,7 +235,9 @@ function App() {
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+      <div
+        style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 32 }}
+      >
         <Panel title="Status Breakdown">
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
@@ -279,6 +296,43 @@ function App() {
                 dot={false}
               />
             </LineChart>
+          </ResponsiveContainer>
+        </Panel>
+      </div>
+
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <Panel title="Readings by Machine Line">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart
+              data={barData}
+              margin={{ top: 10, right: 16, bottom: 0, left: -10 }}
+            >
+              <CartesianGrid stroke="#243249" strokeDasharray="3 3" />
+              <XAxis dataKey="type" stroke="#8ea0b8" tick={{ fontSize: 11 }} />
+              <YAxis stroke="#8ea0b8" tick={{ fontSize: 11 }} />
+              <Tooltip
+                contentStyle={{
+                  background: "#131c2e",
+                  border: "1px solid #243249",
+                  borderRadius: 8,
+                  color: "#e7eef7",
+                }}
+                cursor={{ fill: "rgba(255,255,255,0.04)" }}
+              />
+              <Legend wrapperStyle={{ color: "#8ea0b8" }} />
+              <Bar
+                dataKey="total"
+                name="Total readings"
+                fill="#4da3ff"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="faults"
+                name="Faults"
+                fill="#ef4b5b"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
           </ResponsiveContainer>
         </Panel>
       </div>
