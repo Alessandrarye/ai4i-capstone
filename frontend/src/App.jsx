@@ -48,6 +48,7 @@ const STATUS_LABEL = {
   yellow: "Watch",
   red: "Fault predicted",
 };
+const STATUS_RANK = { green: 0, yellow: 1, red: 2 };
 
 function MachineTile({ name, reading }) {
   const color = STATUS_COLOR[reading.status] || "var(--muted)";
@@ -55,11 +56,12 @@ function MachineTile({ name, reading }) {
   return (
     <div
       style={{
-        background: "var(--panel)",
+        background: fault ? "rgba(239,75,91,0.08)" : "var(--panel)",
         border: `1.5px solid ${fault ? "var(--red)" : "var(--border)"}`,
         borderRadius: 12,
         padding: 16,
         minWidth: 190,
+        boxShadow: fault ? "0 0 18px rgba(239,75,91,0.35)" : "none",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -117,10 +119,14 @@ function App() {
   const total = readings.length;
   const failureRate = total ? ((counts.red / total) * 100).toFixed(1) : "0";
 
-  // latest reading per machine type (readings come newest-first)
-  const latestByType = {};
+  // worst-status reading per machine type
+  const worstByType = {};
   readings.forEach((r) => {
-    if (!latestByType[r.machine_type]) latestByType[r.machine_type] = r;
+    const current = worstByType[r.machine_type];
+    const rank = STATUS_RANK[r.status] ?? -1;
+    if (!current || rank > (STATUS_RANK[current.status] ?? -1)) {
+      worstByType[r.machine_type] = r;
+    }
   });
 
   return (
@@ -150,11 +156,11 @@ function App() {
 
       <h2 style={{ fontSize: 18, marginBottom: 14 }}>Machine Floor</h2>
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        {Object.keys(latestByType).map((type) => (
+        {Object.keys(worstByType).map((type) => (
           <MachineTile
             key={type}
             name={TYPE_NAME[type] || type}
-            reading={latestByType[type]}
+            reading={worstByType[type]}
           />
         ))}
       </div>
