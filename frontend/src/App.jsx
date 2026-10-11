@@ -1,4 +1,12 @@
 import { useEffect, useState } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
 
 const API = "http://localhost:8000";
 
@@ -38,11 +46,7 @@ function KpiCard({ label, value, accent }) {
   );
 }
 
-const STATUS_COLOR = {
-  green: "var(--green)",
-  yellow: "var(--amber)",
-  red: "var(--red)",
-};
+const STATUS_COLOR = { green: "#2fb86b", yellow: "#f2b94b", red: "#ef4b5b" };
 const STATUS_LABEL = {
   green: "Healthy",
   yellow: "Watch",
@@ -95,6 +99,34 @@ function MachineTile({ name, reading }) {
   );
 }
 
+function Panel({ title, children }) {
+  return (
+    <div
+      style={{
+        background: "var(--panel)",
+        border: "1px solid var(--border)",
+        borderRadius: 14,
+        padding: 20,
+        flex: 1,
+        minWidth: 320,
+      }}
+    >
+      <h3
+        style={{
+          margin: "0 0 12px",
+          fontSize: 15,
+          color: "var(--muted)",
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        }}
+      >
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
 const TYPE_NAME = {
   L: "Line L (Low)",
   M: "Line M (Medium)",
@@ -112,9 +144,9 @@ function App() {
         .then(setReadings)
         .catch((e) => setError(e.message));
     };
-    load(); // fetch immediately on load
-    const timer = setInterval(load, 3000); // then re-fetch every 3 seconds
-    return () => clearInterval(timer); // clean up when the page closes
+    load();
+    const timer = setInterval(load, 3000);
+    return () => clearInterval(timer);
   }, []);
 
   const counts = { green: 0, yellow: 0, red: 0 };
@@ -124,7 +156,6 @@ function App() {
   const total = readings.length;
   const failureRate = total ? ((counts.red / total) * 100).toFixed(1) : "0";
 
-  // worst-status reading per machine type
   const worstByType = {};
   readings.forEach((r) => {
     const current = worstByType[r.machine_type];
@@ -133,6 +164,12 @@ function App() {
       worstByType[r.machine_type] = r;
     }
   });
+
+  const pieData = [
+    { name: "Healthy", value: counts.green, color: STATUS_COLOR.green },
+    { name: "Watch", value: counts.yellow, color: STATUS_COLOR.yellow },
+    { name: "Fault", value: counts.red, color: STATUS_COLOR.red },
+  ].filter((d) => d.value > 0);
 
   return (
     <div>
@@ -160,7 +197,9 @@ function App() {
       </div>
 
       <h2 style={{ fontSize: 18, marginBottom: 14 }}>Machine Floor</h2>
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+      <div
+        style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 32 }}
+      >
         {Object.keys(worstByType).map((type) => (
           <MachineTile
             key={type}
@@ -168,6 +207,36 @@ function App() {
             reading={worstByType[type]}
           />
         ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <Panel title="Status Breakdown">
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                dataKey="value"
+                nameKey="name"
+                innerRadius={70}
+                outerRadius={100}
+                paddingAngle={2}
+              >
+                {pieData.map((d) => (
+                  <Cell key={d.name} fill={d.color} stroke="none" />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  background: "#131c2e",
+                  border: "1px solid #243249",
+                  borderRadius: 8,
+                  color: "#e7eef7",
+                }}
+              />
+              <Legend wrapperStyle={{ color: "#8ea0b8" }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </Panel>
       </div>
     </div>
   );
