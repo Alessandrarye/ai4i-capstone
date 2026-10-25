@@ -143,17 +143,29 @@ const TYPE_NAME = {
 function App() {
   const [readings, setReadings] = useState([]);
   const [error, setError] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     const load = () => {
       fetch(`${API}/readings?limit=600`)
         .then((r) => r.json())
-        .then(setReadings)
+        .then((data) => {
+          setReadings(data);
+          setLastUpdated(Date.now());
+          setError(null);
+        })
         .catch((e) => setError(e.message));
     };
     load();
     const timer = setInterval(load, 3000);
     return () => clearInterval(timer);
+  }, []);
+
+  // re-render once a second so the "updated Ns ago" label stays current
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(t);
   }, []);
 
   const counts = { green: 0, yellow: 0, red: 0 };
@@ -197,13 +209,50 @@ function App() {
   });
   const barData = Object.values(byType);
 
+  const secondsAgo = lastUpdated
+    ? Math.round((Date.now() - lastUpdated) / 1000)
+    : null;
+
   return (
     <div>
-      <header style={{ marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 28 }}>Shop Floor Monitor</h1>
-        <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>
-          Affordable Predictive Maintenance for Small Machine Shops
-        </p>
+      <header
+        style={{
+          marginBottom: 24,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
+        <div>
+          <h1 style={{ margin: 0, fontSize: 28 }}>Shop Floor Monitor</h1>
+          <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>
+            Affordable Predictive Maintenance for Small Machine Shops
+          </p>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "6px 12px",
+            borderRadius: 999,
+            background: "var(--panel)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            fontSize: 13,
+            color: "var(--muted)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <span className="live-dot" />
+          <span style={{ color: "var(--text)", fontWeight: 600 }}>Live</span>
+          <span>
+            {secondsAgo === null
+              ? "connecting..."
+              : secondsAgo <= 1
+                ? "updated just now"
+                : `updated ${secondsAgo}s ago`}
+          </span>
+        </div>
       </header>
 
       {error && <p style={{ color: "var(--red)" }}>Error: {error}</p>}
