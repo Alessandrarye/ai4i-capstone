@@ -18,6 +18,12 @@ _threshold = _bundle["threshold"]
 _features = _bundle["features"]
 _version = _bundle.get("model_version", "unknown")
 
+# the anomaly detector sits beside the classifier in models/
+ANOM_PATH = Path(__file__).resolve().parents[3] / "models" / "anomaly_model_v0.1.joblib"
+_anom_bundle = joblib.load(ANOM_PATH)
+_anom_model = _anom_bundle["model"]
+_anom_threshold = _anom_bundle["threshold"]
+
 # Warn (yellow) band: a fraction of the fail threshold flags "getting close"
 _WARN_FRACTION = 0.5
 
@@ -47,12 +53,21 @@ def score_reading(reading: dict) -> dict:
     X = _build_row(reading)
     prob = float(_model.predict_proba(X)[0][1])
 
+    # unsupervised detector: lower score means more abnormal
+    anom_score = float(_anom_model.score_samples(X)[0])
+    is_anomaly = anom_score < _anom_threshold
+
     if prob >= _threshold:
         status = "red"
     elif prob >= _threshold * _WARN_FRACTION:
         status = "yellow"
     else:
         status = "green"
+
+    # the detector can raise an otherwise-healthy reading: a pattern the
+    # classifier was never trained on still gets flagged for a look
+    if is_anomaly and status == "green":
+        status = "yellow"
 
     return {"score": prob, "status": status}
 
