@@ -98,9 +98,15 @@ function MachineTile({ name, reading }) {
           lineHeight: 1.6,
         }}
       >
-        <div>Tool wear: {reading.tool_wear_min} min</div>
-        <div>Torque: {reading.torque_nm} Nm</div>
-        <div>Risk: {(reading.score * 100).toFixed(1)}%</div>
+        {reading.machine_type === "FAN" ? (
+          <div>Vibration: {reading.score.toFixed(3)}</div>
+        ) : (
+          <>
+            <div>Tool wear: {reading.tool_wear_min} min</div>
+            <div>Torque: {reading.torque_nm} Nm</div>
+            <div>Risk: {(reading.score * 100).toFixed(1)}%</div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -145,13 +151,19 @@ function App() {
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [, setTick] = useState(0);
+  const [fanReading, setFanReading] = useState(null);
 
   useEffect(() => {
     const load = () => {
-      fetch(`${API}/readings?limit=600`)
-        .then((r) => r.json())
-        .then((data) => {
-          setReadings(data);
+      Promise.all([
+        fetch(`${API}/readings?limit=600&exclude_type=FAN`).then((r) =>
+          r.json(),
+        ),
+        fetch(`${API}/readings?limit=1&machine_type=FAN`).then((r) => r.json()),
+      ])
+        .then(([model, fan]) => {
+          setReadings(model);
+          setFanReading(fan[0] || null);
           setLastUpdated(Date.now());
           setError(null);
         })
@@ -183,6 +195,7 @@ function App() {
       worstByType[r.machine_type] = r;
     }
   });
+  if (fanReading) worstByType[fanReading.machine_type] = fanReading;
 
   const pieData = [
     { name: "Healthy", value: counts.green, color: STATUS_COLOR.green },
