@@ -18,7 +18,7 @@ Small machine shops run equipment until it breaks because predictive maintenance
 | Data and modeling | AI4I 2020 Predictive Maintenance dataset (Matzka, 2020). Feature engineering, stratified split, gradient-boosted classifier with class weighting and threshold tuning, Isolation Forest anomaly detector trained on healthy rows only. |
 | Backend | FastAPI service that scores each reading with both models and stores it in PostgreSQL (Docker Compose, port 5433). |
 | Dashboard | React + Vite. KPI cards, a green/yellow/red machine floor, status and trend charts, auto-refresh every few seconds. |
-| Live sensor rig | ESP32 with an ADXL345 accelerometer mounted on a desk fan, posting vibration readings over Wi-Fi to a dedicated `/live-reading` endpoint. Scored against a calibrated vibration baseline (0.07 watch, 0.12 fault). |
+| Live sensor rig | ESP32 with an MPU-6050 accelerometer mounted on a desk fan, posting vibration readings over Wi-Fi to a dedicated `/live-reading` endpoint. Scored against a calibrated vibration baseline (0.07 watch, 0.12 fault). |
 | Replay | `scripts/replay.py` streams the dataset through the live API to populate the dashboard with simulated machines. |
 
 ## Results on held-out data
@@ -68,7 +68,7 @@ ai4i-capstone/
 └── requirements.txt
 ```
 
-ESP32 firmware (Arduino C++) samples the accelerometer, computes vibration features on the chip, and POSTs to `/live-reading` every few seconds. The sketch will be added to the repository after the demo.
+ESP32 firmware (Arduino C++) samples the accelerometer, computes vibration features on the chip, and POSTs to `/live-reading` every few seconds. See the firmware folder or `docs/` for the sketch.
 
 ## How to run
 
