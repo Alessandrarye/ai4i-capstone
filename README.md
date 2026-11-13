@@ -3,7 +3,17 @@
 An edge-deployed predictive maintenance platform built for the UTD / Fullstack Academy AI/ML Bootcamp capstone. It watches a machine, learns what normal looks like, and warns the owner before something fails. Everything runs on one small computer on the shop floor: sensors, database, models, API, and dashboard. No cloud, no subscription.
 
 **Author:** Sandra Hershey-Zagrans (GitHub: Alessandrarye)
-**Demo:** November 12, 2026, live over Zoom with a physical sensor rig
+**Demo:** November 12, 2026, live over Zoom with a physical sensor rig (see Demo section below)
+
+---
+
+## Demo
+
+Presented live over Zoom on November 12, 2026 (UTD / Fullstack Academy AI/ML capstone, graded 100%). The live portion used a desk fan with an ESP32 and MPU-6050 accelerometer as the stand-in machine; a foam block pressed into the blade path produced a controlled fault that took the FAN tile from green to yellow to red on the dashboard.
+
+- Slide deck: [docs/Capstone_Demo_Day_Deck.pdf](docs/Capstone_Demo_Day_Deck.pdf)
+- One-page summary: [docs/Capstone_Project_Summary.pdf](docs/Capstone_Project_Summary.pdf)
+- Dashboard screenshot and sensor rig: see `docs/images/`
 
 ---
 
@@ -68,7 +78,7 @@ ai4i-capstone/
 └── requirements.txt
 ```
 
-ESP32 firmware (Arduino C++) samples the accelerometer, computes vibration features on the chip, and POSTs to `/live-reading` every few seconds. See the firmware folder or `docs/` for the sketch.
+ESP32 firmware (Arduino C++) samples the accelerometer, computes vibration features on the chip, and POSTs to `/live-reading` every few seconds. The board finds the backend host by mDNS (`foundry.local`), so it works on any Wi-Fi network without reflashing. The sketch lives in `firmware/` with Wi-Fi credentials removed.
 
 ## How to run
 
@@ -126,6 +136,10 @@ The bootcamp's reference capstone defines four stages. This project covers them 
 3. Mount the system on a real CNC and learn that machine's baseline.
 4. Collect time-series data and work toward lead-time (remaining-useful-life) estimates.
 5. Authentication, staleness detection, and service hardening for a shop pilot.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
 
 ## Reference
 
